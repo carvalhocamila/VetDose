@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="VetDose — protótipo educacional de consulta farmacológica e cálculos veterinários." />
+<title>VetDose | Apoio ao estudo veterinário</title>
+<style>
+  :root{
+    --bg:#f4f7f8; --surface:#ffffff; --surface-2:#edf5f4; --ink:#182b35; --muted:#6c7e86;
+    --line:#dce6e8; --teal:#117c78; --teal-dark:#0a625f; --teal-soft:#dff3ef;
+    --navy:#173642; --gold:#e9b65b; --warning:#fff4d9; --warning-ink:#75541a; --danger:#fff0ed; --danger-ink:#9f3d2f;
+    --shadow:0 16px 36px rgba(23,54,66,.07); --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+  .sidebar{background:var(--navy);color:white;padding:26px 17px;display:flex;flex-direction:column;gap:26px;min-height:100vh;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:12px;padding:0 9px}
+  .brand-mark{width:43px;height:43px;border-radius:14px;background:#dff3ef;color:var(--teal-dark);display:grid;place-items:center;font-size:23px;font-weight:800}
+  .brand h1{font-size:20px;letter-spacing:-.5px;margin:0}.brand p{font-size:11px;color:#b5c9ce;margin:1px 0 0;letter-spacing:.7px;text-transform:uppercase}
+  .nav-label{font-size:10px;color:#94afb6;text-transform:uppercase;font-weight:800;letter-spacing:1.4px;padding:0 12px;margin-bottom:8px}
+  .nav{display:grid;gap:6px}
+  .nav-btn{border:0;color:#c8d8dc;background:transparent;border-radius:12px;text-align:left;padding:12px 13px;display:flex;gap:12px;align-items:center;transition:.18s;font-size:13px;font-weight:650}
+  .nav-btn:hover{background:#244b57;color:white}.nav-btn.active{background:#dff3ef;color:#0b625e}
+  .nav-icon{width:20px;text-align:center;font-size:16px}
+  .side-note{margin-top:auto;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.05);padding:15px;border-radius:14px;font-size:12px;color:#bed0d4}
+  .side-note strong{display:block;color:#fff;margin-bottom:5px;font-size:12px}
+  .main{min-width:0;padding:28px clamp(16px,3.2vw,48px) 48px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:28px}
+  .eyebrow{color:var(--teal);font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:5px}
+  .page-title{font-size:clamp(25px,3vw,34px);line-height:1.14;letter-spacing:-1px;margin:0;font-weight:780}
+  .page-subtitle{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:670px}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .status-pill{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:8px 12px;font-size:11px;white-space:nowrap;display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;background:#2a9b7f;border-radius:50%;display:inline-block}
+  .page{display:none;animation:appear .2s ease}.page.active{display:block}@keyframes appear{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .hero{background:linear-gradient(115deg,#123a45 0%,#166f6a 100%);color:white;border-radius:22px;padding:clamp(22px,3.4vw,38px);display:grid;grid-template-columns:1.3fr .7fr;gap:22px;align-items:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .hero:after{content:"";position:absolute;width:280px;height:280px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-72px;top:-102px;box-shadow:0 0 0 33px rgba(255,255,255,.025),0 0 0 67px rgba(255,255,255,.025)}
+  .hero-kicker{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#b7e9df;font-weight:800;margin:0 0 12px}
+  .hero h2{font-size:clamp(25px,3vw,39px);line-height:1.1;letter-spacing:-1.2px;margin:0;max-width:590px}
+  .hero p{max-width:550px;color:#d7e9e9;font-size:13px;line-height:1.8;margin:15px 0 21px}
+  .hero-actions{display:flex;gap:9px;flex-wrap:wrap}
+  .hero-art{position:relative;z-index:1;display:grid;place-items:center;min-height:150px}
+  .orbit{width:170px;height:170px;border-radius:50%;border:1px solid rgba(255,255,255,.28);display:grid;place-items:center;position:relative}
+  .orbit:before,.orbit:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.17);border-radius:50%}.orbit:before{inset:18px}.orbit:after{inset:38px}
+  .orbit-center{width:76px;height:76px;background:#e1f5ef;color:var(--teal-dark);border-radius:25px;display:grid;place-items:center;font-size:38px;box-shadow:0 12px 25px rgba(0,0,0,.16);z-index:1}
+  .orbit-tag{position:absolute;background:#fff;color:var(--navy);padding:7px 10px;border-radius:10px;font-size:10px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.12)}.orbit-tag.t1{top:4px;right:-10px}.orbit-tag.t2{bottom:5px;left:-13px}.orbit-tag.t3{right:-18px;bottom:37px}
+  .btn{border:0;border-radius:11px;padding:11px 15px;font-size:12px;font-weight:750;transition:.18s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn:hover{transform:translateY(-1px)}.btn-primary{background:var(--teal);color:#fff}.btn-primary:hover{background:var(--teal-dark)}.btn-white{background:white;color:var(--navy)}.btn-ghost{color:var(--ink);border:1px solid var(--line);background:white}.btn-light{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:white}.btn-small{padding:8px 11px;font-size:11px}
+  .section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:29px 0 14px}.section-head h3{margin:0;font-size:18px;letter-spacing:-.4px}.section-head p{color:var(--muted);font-size:12px;margin:5px 0 0}
+  .grid{display:grid;gap:15px}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:19px;box-shadow:0 5px 18px rgba(23,54,66,.025);min-width:0}
+  .metric{display:flex;justify-content:space-between;align-items:start;gap:10px}.metric-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal-dark);font-size:18px}.metric-label{font-size:11px;color:var(--muted);font-weight:650}.metric-num{font-size:25px;font-weight:800;letter-spacing:-.6px;margin:12px 0 2px}.metric-foot{font-size:11px;color:var(--muted)}
+  .feature-card{display:flex;gap:14px;align-items:flex-start;padding:19px}.feature-icon{width:45px;height:45px;border-radius:14px;background:var(--surface-2);color:var(--teal);display:grid;place-items:center;font-size:21px;flex-shrink:0}.feature-card h4{font-size:14px;margin:1px 0 5px}.feature-card p{font-size:12px;color:var(--muted);margin:0;line-height:1.7}.text-link{color:var(--teal);font-size:11px;font-weight:800;border:0;background:none;padding:9px 0 0}
+  .notice{padding:13px 15px;border-radius:13px;background:var(--warning);color:var(--warning-ink);font-size:12px;line-height:1.65;border:1px solid #f1dfb0}.notice strong{display:block;margin-bottom:3px}.notice.danger{background:var(--danger);color:var(--danger-ink);border-color:#f4d0ca}.notice.info{background:#e9f5f8;border-color:#d0e8ee;color:#245865}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.searchbox{display:flex;gap:9px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 12px;min-width:180px;flex:1}.searchbox input{border:0;outline:0;padding:12px 0;background:transparent;width:100%;min-width:0;font-size:12px;color:var(--ink)}
+  .field{display:grid;gap:6px;min-width:0}.field label{font-size:11px;font-weight:750;color:#526770}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid var(--line);background:#fbfdfd;border-radius:10px;outline:0;color:var(--ink);font-size:12px;min-width:0}.field input:focus,.field select:focus,.field textarea:focus{border-color:#64aaa4;box-shadow:0 0 0 3px rgba(17,124,120,.1)}.field small{font-size:10px;color:var(--muted)}
+  .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.form-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.form-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.span-2{grid-column:span 2}.span-all{grid-column:1/-1}
+  .card-title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}.card-title h3{font-size:16px;margin:0}.card-title p{font-size:11px;color:var(--muted);margin:5px 0 0;line-height:1.65}.tag{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:7px;background:var(--teal-soft);color:var(--teal-dark);font-size:10px;font-weight:800;white-space:nowrap}.tag.neutral{background:#f0f3f5;color:#60727a}.tag.amber{background:#fff0d0;color:#805817}
+  .result-panel{background:#f1f8f7;border:1px solid #d9ece8;border-radius:14px;padding:16px;margin-top:16px}.result-label{font-size:10px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.7px}.result-value{font-size:27px;font-weight:830;letter-spacing:-.7px;color:#0c6964;margin:5px 0}.result-desc{font-size:11px;color:var(--muted);line-height:1.6}.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.result-box{border:1px solid #dceae8;background:#fff;border-radius:12px;padding:13px;min-width:0}.result-box .num{font-size:19px;color:var(--teal-dark);font-weight:800;margin:4px 0;overflow-wrap:anywhere}.result-box .lbl{font-size:10px;font-weight:750;color:var(--muted)}
+  .medicine-list{display:grid;gap:10px}.medicine-row{display:flex;align-items:center;gap:13px;background:white;border:1px solid var(--line);border-radius:14px;padding:14px}.med-avatar{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#e5f3f2;color:var(--teal-dark);font-size:20px;flex-shrink:0}.med-main{min-width:0;flex:1}.med-main h4{font-size:13px;margin:0}.med-main p{font-size:11px;color:var(--muted);margin:3px 0 0}.med-row-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .upload-box{border:1.5px dashed #a9c9c6;background:#f5faf9;border-radius:16px;min-height:205px;display:grid;place-items:center;padding:22px;text-align:center;transition:.2s;position:relative;overflow:hidden}.upload-box.drag{background:#e3f5f1;border-color:var(--teal)}.upload-inner{max-width:350px}.upload-symbol{margin:0 auto 12px;width:52px;height:52px;border-radius:16px;background:#dff3ef;color:var(--teal-dark);display:grid;place-items:center;font-size:24px}.upload-box h4{margin:0 0 6px;font-size:14px}.upload-box p{margin:0 auto 13px;font-size:11px;color:var(--muted);line-height:1.65}.upload-box input[type=file]{display:none}.preview-img{max-width:100%;max-height:270px;object-fit:contain;border-radius:10px}.image-preview-wrap{display:none;max-width:100%}.upload-box.has-image .upload-inner{display:none}.upload-box.has-image .image-preview-wrap{display:block}.upload-box.has-image{border-style:solid}
+  .tabs{display:flex;gap:5px;padding:5px;border-radius:12px;background:#eef3f4;overflow-x:auto;margin-bottom:18px}.tab-btn{border:0;background:transparent;border-radius:9px;padding:9px 12px;color:var(--muted);font-size:11px;font-weight:750;white-space:nowrap}.tab-btn.active{background:white;color:var(--teal-dark);box-shadow:0 2px 7px rgba(23,54,66,.06)}.tab-content{display:none}.tab-content.active{display:block}
+  .solution-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.solution-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:white}.solution-card h4{margin:0 0 5px;font-size:13px}.solution-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.7}.solution-card .tag{margin-bottom:10px}
+  .reference-list{display:grid;gap:10px}.reference{padding:14px;border:1px solid var(--line);border-radius:12px;background:white}.reference strong{font-size:12px;display:block;margin-bottom:4px}.reference p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}
+  .footer{margin-top:34px;border-top:1px solid var(--line);padding-top:17px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:10px}
+  .empty{padding:28px;text-align:center;color:var(--muted);font-size:12px;background:white;border:1px dashed var(--line);border-radius:14px}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(7,27,34,.52);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal-backdrop.open{display:flex}.modal{width:min(620px,100%);max-height:88vh;overflow:auto;background:white;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:16px}.modal-head h3{margin:0;font-size:21px}.close-btn{background:#f0f4f5;border:0;border-radius:9px;width:34px;height:34px;font-size:19px;color:#456;flex-shrink:0}.modal-body{font-size:12px;line-height:1.8;color:#526770}.modal-body h4{color:var(--ink);font-size:13px;margin:18px 0 5px}.modal-body p{margin:5px 0}
+  .mobile-menu{display:none}
+  @media(max-width:1120px){.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr .55fr}.form-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:40;left:-270px;width:250px;transition:left .22s;box-shadow:0 0 0 999px rgba(0,0,0,0);height:100vh}.sidebar.open{left:0;box-shadow:0 0 0 999px rgba(5,20,25,.35)}.mobile-menu{display:inline-flex}.main{padding:19px 16px 35px}.topbar{align-items:flex-start}.top-actions{gap:6px}.status-pill{display:none}.hero{grid-template-columns:1fr}.hero-art{display:none}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}.form-grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}.section-head{align-items:flex-start}}
+  @media(max-width:540px){.grid-4{grid-template-columns:1fr 1fr;gap:9px}.card{padding:15px}.metric-num{font-size:21px}.metric-icon{width:32px;height:32px}.form-grid,.form-grid.three,.form-grid.four{grid-template-columns:1fr}.span-2{grid-column:span 1}.result-grid{grid-template-columns:1fr}.solution-grid{grid-template-columns:1fr}.medicine-row{align-items:flex-start;flex-wrap:wrap}.med-row-actions{width:100%;justify-content:flex-start;padding-left:55px}.page-title{font-size:25px}.section-head h3{font-size:16px}.topbar{gap:10px}.toolbar{flex-direction:column}.searchbox{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">✚</div><div><h1>VetDose</h1><p>Study • Calculate • Care</p></div></div>
+    <div><div class="nav-label">Plataforma</div><nav class="nav" aria-label="Navegação principal">
+      <button class="nav-btn active" data-page="dashboard"><span class="nav-icon">⌂</span> Visão geral</button>
+      <button class="nav-btn" data-page="medicamentos"><span class="nav-icon">▤</span> Medicamentos</button>
+      <button class="nav-btn" data-page="dose"><span class="nav-icon">∑</span> Calculadora de dose</button>
+      <button class="nav-btn" data-page="fluidos"><span class="nav-icon">♧</span> VetFluidos</button>
+      <button class="nav-btn" data-page="referencias"><span class="nav-icon">▣</span> Referências e segurança</button>
+    </nav></div>
+    <div class="side-note"><strong>ⓘ Protótipo educacional</strong>Os resultados são cálculos e conteúdos para estudo. Não substituem diagnóstico, prescrição ou monitoramento por médico-veterinário.</div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div style="display:flex;gap:10px;align-items:flex-start"><button class="btn btn-ghost mobile-menu" id="mobileMenu" aria-label="Abrir menu">☰</button><div><div class="eyebrow" id="eyebrow">Bem-vindo ao VetDose</div><h2 class="page-title" id="pageTitle">Seu apoio ao estudo veterinário</h2><p class="page-subtitle" id="pageSubtitle">Consulte informações farmacológicas e pratique cálculos em um só lugar.</p></div></div>
+      <div class="top-actions"><div class="status-pill"><span class="dot"></span> Protótipo local</div><button class="btn btn-primary" id="quickDose">＋ Novo cálculo</button></div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="hero">
+        <div><p class="hero-kicker">Conhecimento aplicado à prática</p><h2>Farmacologia veterinária, com mais clareza.</h2><p>Explore fichas de medicamentos, faça cálculos de dose e estude os fundamentos da fluidoterapia. Uma plataforma pensada para apoiar a aprendizagem em Medicina Veterinária.</p><div class="hero-actions"><button class="btn btn-white" data-goto="medicamentos">⌕ Consultar medicamento</button><button class="btn btn-light" data-goto="fluidos">♧ Abrir VetFluidos</button></div></div>
+        <div class="hero-art"><div class="orbit"><div class="orbit-center">✚</div><span class="orbit-tag t1">Fármacos</span><span class="orbit-tag t2">Cálculos</span><span class="orbit-tag t3">Fluidos</span></div></div>
+      </div>
+      <div class="section-head"><div><h3>Seu espaço de trabalho</h3><p>Acesse rapidamente os principais recursos.</p></div></div>
+      <div class="grid grid-4">
+        <div class="card"><div class="metric"><div class="metric-label">Fichas demonstrativas</div><div class="metric-icon">▤</div></div><div class="metric-num" id="metricMeds">3</div><div class="metric-foot">No catálogo local de exemplo</div></div>
+        <div class="card"><div class="metric"><div class="metric-label">Calculadoras</div><div class="metric-icon">∑</div></div><div class="metric-num">02</div><div class="metric-foot">Dose e fluidoterapia</div></div>
+        <div class="card"><div class="metric"><div class="metric-label">Modo de uso</div><div class="metric-icon">⌁</div></div><div class="metric-num" style="font-size:20px">Educacional</div><div class="metric-foot">Sem prescrição automática</div></div>
+        <div class="card"><div class="metric"><div class="metric-label">Suas imagens</div><div class="metric-icon">▧</div></div><div class="metric-num" id="metricPhotos">0</div><div class="metric-foot">Visualizações nesta sessão</div></div>
+      </div>
+      <div class="section-head"><div><h3>Comece por aqui</h3><p>Ferramentas centrais do VetDose.</p></div></div>
+      <div class="grid grid-2">
+        <article class="card feature-card"><div class="feature-icon">▧</div><div><h4>Identifique por foto</h4><p>Envie uma imagem da embalagem ou da bula. Neste protótipo, a imagem é exibida para conferência e os dados são preenchidos manualmente; OCR ainda precisa ser integrado.</p><button class="text-link" data-goto="medicamentos">Abrir identificação →</button></div></article>
+        <article class="card feature-card"><div class="feature-icon">∑</div><div><h4>Calcule uma dose</h4><p>Informe peso, dose documentada e concentração para calcular a quantidade matemática correspondente, sem sugerir uma posologia por conta própria.</p><button class="text-link" data-goto="dose">Ir para calculadora →</button></div></article>
+        <article class="card feature-card"><div class="feature-icon">♧</div><div><h4>Estude fluidoterapia</h4><p>Calcule componentes do balanço hídrico e revise os critérios que ajudam a orientar a seleção de soluções.</p><button class="text-link" data-goto="fluidos">Abrir VetFluidos →</button></div></article>
+        <article class="card feature-card"><div class="feature-icon">▣</div><div><h4>Consulte referências</h4><p>Veja as fontes recomendadas para desenvolver um catálogo rastreável e validar os cálculos da aplicação.</p><button class="text-link" data-goto="referencias">Ver referências →</button></div></article>
+      </div>
+      <div class="notice" style="margin-top:16px"><strong>Importante para este protótipo</strong>As fichas do catálogo são exemplos de estrutura e não contêm posologias clínicas validadas. Antes de utilizar dados reais, preencha-os a partir de bulas e referências confiáveis, com revisão veterinária.</div>
+    </section>
+
+    <!-- MEDICAMENTOS -->
+    <section class="page" id="page-medicamentos">
+      <div class="grid grid-2" style="align-items:start">
+        <div class="card">
+          <div class="card-title"><div><h3>Identificar medicamento por foto</h3><p>Envie a embalagem, frasco ou trecho legível da bula.</p></div><span class="tag">Imagem</span></div>
+          <div class="upload-box" id="uploadBox">
+            <input type="file" id="medicineImage" accept="image/*" />
+            <div class="upload-inner"><div class="upload-symbol">＋</div><h4>Arraste uma imagem até aqui</h4><p>ou selecione um arquivo PNG, JPG ou WEBP. Prefira uma foto nítida, com nome e concentração visíveis.</p><button class="btn btn-primary" type="button" id="chooseImage">Selecionar imagem</button></div>
+            <div class="image-preview-wrap"><img id="previewImg" class="preview-img" alt="Pré-visualização da imagem do medicamento"/><p id="imageName" style="font-size:11px;color:var(--muted)"></p><button class="btn btn-ghost btn-small" id="removeImage" type="button">Remover imagem</button></div>
+          </div>
+          <div class="notice info" style="margin-top:12px"><strong>Reconhecimento automático ainda não integrado</strong>Nesta versão, a foto não é interpretada por IA/OCR. Confira os dados da embalagem e preencha os campos ao lado manualmente. A integração futura deverá sugerir correspondências, nunca confirmar um fármaco sem validação.</div>
+          <div class="field" style="margin-top:14px"><label for="lookupText">Pesquisar no catálogo</label><div class="searchbox"><span>⌕</span><input id="lookupText" placeholder="Nome comercial ou princípio ativo..." /></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div><h3>Dados para pesquisa</h3><p>Confirme a identificação antes de consultar a ficha.</p></div></div>
+          <div class="form-grid">
+            <div class="field span-2"><label for="medNameInput">Nome do medicamento</label><input id="medNameInput" placeholder="Ex.: nome que consta na embalagem" /></div>
+            <div class="field"><label for="activeInput">Princípio ativo</label><input id="activeInput" placeholder="Princípio ativo" /></div>
+            <div class="field"><label for="strengthInput">Concentração/apresentação</label><input id="strengthInput" placeholder="Ex.: mg/mL ou mg/comprimido" /></div>
+            <div class="field span-2"><label for="speciesInput">Espécie / observação</label><input id="speciesInput" placeholder="Ex.: conferir bula para a espécie de interesse" /></div>
+          </div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-primary" id="searchMedBtn">Pesquisar catálogo</button><button class="btn btn-ghost" id="clearMedForm">Limpar campos</button></div>
+          <div id="lookupFeedback" style="font-size:11px;color:var(--muted);margin-top:10px" aria-live="polite">A pesquisa compara os dados digitados com as fichas de demonstração abaixo.</div>
+        </div>
+      </div>
+      <div class="section-head"><div><h3>Catálogo de medicamentos</h3><p>Fichas demonstrativas — revise e complete com fontes verificadas antes de uso acadêmico.</p></div><span class="tag neutral" id="catalogCount">3 fichas</span></div>
+      <div class="toolbar"><div class="searchbox"><span>⌕</span><input id="catalogSearch" placeholder="Filtrar fichas por nome, classe ou princípio ativo..." /></div><select id="classFilter" aria-label="Filtrar por classe" style="border:1px solid var(--line);background:white;border-radius:12px;padding:0 12px;font-size:12px;color:var(--ink)"><option value="all">Todas as classes</option><option value="Antimicrobiano">Antimicrobianos</option><option value="Anti-inflamatório">Anti-inflamatórios</option></select></div>
+      <div class="medicine-list" id="medicineList"></div>
+    </section>
+
+    <!-- DOSE -->
+    <section class="page" id="page-dose">
+      <div class="grid grid-2" style="align-items:start">
+        <div class="card">
+          <div class="card-title"><div><h3>Calculadora de dose</h3><p>Faça o cálculo a partir de uma dose previamente selecionada em uma fonte confiável ou de uma prescrição.</p></div><span class="tag">Cálculo</span></div>
+          <div class="notice" style="margin-bottom:17px"><strong>Não fornecemos doses recomendadas automaticamente</strong>A dose inserida deve corresponder ao medicamento, à espécie, à indicação e à unidade da referência consultada. Este módulo realiza somente a operação matemática.</div>
+          <form id="doseForm">
+            <div class="form-grid">
+              <div class="field"><label for="doseSpecies">Espécie (registro de estudo)</label><select id="doseSpecies"><option>Cão</option><option>Gato</option><option>Equino</option><option>Bovino</option><option>Suíno</option><option>Outra</option></select></div>
+              <div class="field"><label for="doseMedicine">Medicamento (opcional)</label><input id="doseMedicine" placeholder="Nome para seu registro" /></div>
+              <div class="field"><label for="weight">Peso do animal (kg)</label><input id="weight" type="number" min="0.001" step="any" placeholder="Ex.: 8,5" required /></div>
+              <div class="field"><label for="doseValue">Dose de referência (mg/kg por administração)</label><input id="doseValue" type="number" min="0.000001" step="any" placeholder="Digite a dose documentada" required /></div>
+              <div class="field"><label for="concentrationValue">Concentração numérica</label><input id="concentrationValue" type="number" min="0.000001" step="any" placeholder="Ex.: valor em mg/mL" required /></div>
+              <div class="field"><label for="concentrationUnit">Unidade da apresentação</label><select id="concentrationUnit"><option value="mgml">mg/mL (líquido)</option><option value="mgtablet">mg por comprimido</option></select></div>
+              <div class="field span-2"><label for="doseSource">Fonte da dose / anotação (recomendado)</label><input id="doseSource" placeholder="Ex.: bula, livro, artigo, página e ano" /></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:17px;width:100%" type="submit">Calcular quantidade</button>
+          </form>
+          <div id="doseResult" aria-live="polite"></div>
+        </div>
+        <div class="grid" style="align-content:start">
+          <div class="card"><div class="card-title"><div><h3>Como o cálculo funciona</h3><p>Para dose expressa em mg/kg por administração:</p></div></div><div class="result-panel" style="margin-top:0"><div class="result-label">Quantidade de princípio ativo</div><div class="result-value" style="font-size:22px">mg/kg × kg = mg</div><div class="result-desc">A dose por peso multiplicada pelo peso corporal fornece a quantidade calculada de princípio ativo por administração.</div></div><div class="result-panel"><div class="result-label">Para formulação líquida</div><div class="result-value" style="font-size:22px">mg ÷ mg/mL = mL</div><div class="result-desc">O volume é obtido dividindo a quantidade calculada pela concentração do produto.</div></div><div class="result-panel"><div class="result-label">Para comprimidos</div><div class="result-value" style="font-size:22px">mg ÷ mg/comprimido</div><div class="result-desc">O resultado matemático em comprimidos não significa que seja possível fracionar o medicamento. Confira a apresentação e a orientação profissional.</div></div></div>
+          <div class="notice danger"><strong>Confira antes de interpretar</strong>Verifique se a dose está expressa por administração ou por dia, se as unidades são compatíveis e se a apresentação corresponde exatamente ao produto. Não arredonde automaticamente para uma dose administrável.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLUIDOS -->
+    <section class="page" id="page-fluidos">
+      <div class="hero" style="grid-template-columns:1fr .35fr;padding:25px 28px;margin-bottom:17px"><div><p class="hero-kicker">Módulo de fluidoterapia</p><h2 style="font-size:28px">VetFluidos</h2><p style="margin-bottom:0">Estude os componentes do plano hídrico e calcule cada parcela separadamente. A seleção de soluções deve considerar a avaliação clínica e os dados laboratoriais.</p></div><div class="hero-art"><div style="font-size:76px;color:#dff3ef">♧</div></div></div>
+      <div class="notice" style="margin-bottom:17px"><strong>Uso educacional — não é um plano de fluidoterapia prescrito</strong>Os cálculos abaixo estimam componentes matemáticos. Não estimam automaticamente ressuscitação, não validam a indicação clínica e não substituem reavaliação. Pacientes com doença cardíaca/renal, oligúria, distúrbios eletrolíticos ou risco de sobrecarga exigem avaliação veterinária cuidadosa.</div>
+      <div class="tabs" role="tablist"><button class="tab-btn active" data-tab="fluid-calc">Calculadora</button><button class="tab-btn" data-tab="fluid-guide">Guia de soluções</button><button class="tab-btn" data-tab="fluid-principles">Princípios de avaliação</button></div>
+      <div class="tab-content active" id="tab-fluid-calc">
+        <div class="grid grid-2" style="align-items:start">
+          <div class="card">
+            <div class="card-title"><div><h3>Componentes do balanço hídrico</h3><p>Preencha somente os campos para os quais você possui dados ou uma taxa de referência escolhida.</p></div></div>
+            <form id="fluidForm">
+              <div class="form-grid">
+                <div class="field"><label for="fluidWeight">Peso (kg)</label><input id="fluidWeight" type="number" min="0.001" step="any" placeholder="Ex.: 12" required /></div>
+                <div class="field"><label for="dehydration">Desidratação estimada (%)</label><input id="dehydration" type="number" min="0" max="20" step="any" placeholder="Ex.: 6" required /><small>Informe 6 para 6%, não 0,06.</small></div>
+                <div class="field"><label for="correctionHours">Período de correção usado no exercício (h)</label><input id="correctionHours" type="number" min="0.1" step="any" placeholder="Ex.: 24" required /></div>
+                <div class="field"><label for="maintenanceRate">Taxa de manutenção de referência (mL/kg/dia)</label><input id="maintenanceRate" type="number" min="0" step="any" placeholder="Digite conforme a fonte" /><small>Não há uma taxa universal pré-selecionada.</small></div>
+                <div class="field"><label for="ongoingLosses">Perdas contínuas estimadas (mL/dia)</label><input id="ongoingLosses" type="number" min="0" step="any" value="0" required /></div>
+                <div class="field"><label for="dropFactor">Fator do equipo (gotas/mL)</label><select id="dropFactor"><option value="20">20 gotas/mL</option><option value="15">15 gotas/mL</option><option value="60">60 microgotas/mL</option><option value="10">10 gotas/mL</option></select></div>
+              </div>
+              <div class="field" style="margin-top:14px"><label style="display:flex;align-items:center;gap:9px;font-weight:700"><input type="checkbox" id="showCombined" style="width:auto"> Mostrar soma aritmética ilustrativa das parcelas</label><small>Use somente em exercício didático. A soma não é recomendação clínica de velocidade de infusão.</small></div>
+              <button class="btn btn-primary" type="submit" style="width:100%;margin-top:17px">Calcular componentes</button>
+              <button class="btn btn-ghost" type="button" id="clearFluid" style="width:100%;margin-top:8px">Limpar campos</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-title"><div><h3>Resultados matemáticos</h3><p>Valores calculados com os parâmetros digitados.</p></div><span class="tag neutral">mL / h</span></div>
+            <div id="fluidResult"><div class="empty">Preencha os campos e selecione “Calcular componentes” para visualizar os resultados.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-fluid-guide">
+        <div class="card" style="margin-bottom:15px"><div class="card-title"><div><h3>Biblioteca de soluções</h3><p>Resumo educacional sobre características gerais. A escolha depende do quadro clínico, dos exames e do objetivo da fluidoterapia.</p></div></div>
+          <div class="solution-grid">
+            <article class="solution-card"><span class="tag">Cristaloide balanceado</span><h4>Ex.: Ringer com lactato</h4><p>Solução com eletrólitos em composição balanceada. Pode ser considerada em diferentes contextos de reposição extracelular, de acordo com perfusão, eletrólitos, equilíbrio ácido-base e condições concomitantes. Conferir a composição do produto específico.</p></article>
+            <article class="solution-card"><span class="tag">Cristaloide não balanceado</span><h4>Cloreto de sódio 0,9%</h4><p>Contém sódio e cloreto em concentrações específicas. Pode ser considerada em situações selecionadas, mas a carga de cloreto e o estado ácido-base devem ser levados em conta. Não é uma solução universal para todo paciente.</p></article>
+            <article class="solution-card"><span class="tag amber">Uso específico</span><h4>Soluções com glicose</h4><p>Podem fazer parte de planos específicos de fornecimento de glicose ou de manejo de alterações selecionadas. Não devem ser tratadas como substitutas universais de fluidos isotônicos para ressuscitação.</p></article>
+            <article class="solution-card"><span class="tag amber">Uso restrito / monitorado</span><h4>Soluções hipertônicas</h4><p>Exigem uma indicação específica e monitoramento apropriado, inclusive de eletrólitos e do estado circulatório. Não usar este resumo isolado para selecionar ou administrar esse tipo de solução.</p></article>
+            <article class="solution-card"><span class="tag neutral">Plano de manutenção</span><h4>Soluções de manutenção</h4><p>A composição deve ser compatível com as necessidades e os resultados laboratoriais. A taxa de manutenção deve ser diferenciada de ressuscitação e correção de déficit.</p></article>
+            <article class="solution-card"><span class="tag neutral">Contexto especial</span><h4>Hemocomponentes e coloides</h4><p>Não são intercambiáveis com cristaloides e exigem avaliação de indicações, riscos e monitoramento específicos. O sistema futuro deve tratar essas opções em uma seção avançada revisada por especialistas.</p></article>
+          </div>
+        </div>
+        <div class="notice danger"><strong>O guia não é um mecanismo de prescrição automática</strong>Não associe uma doença a um tipo de soro sem avaliação individual. Os cards resumem conceitos e não fornecem dose, volume ou velocidade de administração.</div>
+      </div>
+      <div class="tab-content" id="tab-fluid-principles">
+        <div class="grid grid-2">
+          <div class="card"><div class="card-title"><div><h3>Componentes do plano</h3><p>Devem ser avaliados de forma separada.</p></div></div><div class="reference-list"><div class="reference"><strong>Ressuscitação</strong><p>Objetiva tratar hipoperfusão/choque quando indicado. Requer avaliação e reavaliação frequentes; não é incluída na soma simples desta calculadora.</p></div><div class="reference"><strong>Reidratação</strong><p>O déficit estimado é uma aproximação baseada no peso e na estimativa clínica de desidratação. A correção real depende da condição do paciente e da reavaliação.</p></div><div class="reference"><strong>Manutenção</strong><p>Representa necessidades basais estimadas. A fórmula e a taxa devem ser explicitadas e adaptadas à espécie, condição e referência adotada.</p></div><div class="reference"><strong>Perdas contínuas</strong><p>Precisam ser estimadas ou medidas e atualizadas ao longo do tempo; perdas gastrointestinais, por exemplo, podem variar significativamente.</p></div></div></div>
+          <div class="card"><div class="card-title"><div><h3>O que monitorar</h3><p>O plano precisa ser reavaliado durante a terapia.</p></div></div><div class="reference-list"><div class="reference"><strong>Perfusão e estado circulatório</strong><p>Interpretação clínica de frequência cardíaca, pulsos, mucosas, tempo de preenchimento capilar, pressão arterial e estado mental, conforme o paciente.</p></div><div class="reference"><strong>Balanço hídrico</strong><p>Entradas e saídas, peso seriado, diurese quando mensurável e sinais de sobrecarga hídrica.</p></div><div class="reference"><strong>Laboratório</strong><p>Eletrólitos, função renal e equilíbrio ácido-base quando indicados; a frequência depende do quadro e do plano adotado.</p></div><div class="reference"><strong>Risco individual</strong><p>Doença cardíaca ou renal, baixa produção de urina, alterações eletrolíticas e outras condições podem modificar substancialmente as decisões.</p></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCIAS -->
+    <section class="page" id="page-referencias">
+      <div class="grid grid-2" style="align-items:start">
+        <div class="card"><div class="card-title"><div><h3>Referências para estruturar o catálogo</h3><p>Use fontes primárias e rastreáveis; registre versão, data de consulta e espécie/indicação.</p></div></div><div class="reference-list">
+          <div class="reference"><strong>MAPA — Produtos veterinários</strong><p>Fonte oficial brasileira para consulta de informações regulatórias e produtos veterinários registrados. Verifique sempre a bula e a apresentação específica.</p><p style="margin-top:8px"><a href="https://www.gov.br/agricultura/pt-br/assuntos/insumos-agropecuarios/insumos-pecuarios/produtos-veterinarios/produtos-veterinarios" target="_blank" rel="noopener noreferrer">Abrir portal de produtos veterinários ↗</a></p></div>
+          <div class="reference"><strong>Merck Veterinary Manual</strong><p>Material de referência para farmacologia, terapêutica e conceitos de fluidoterapia veterinária. Não substitui a bula nem a avaliação do paciente.</p><p style="margin-top:8px"><a href="https://www.merckvetmanual.com/" target="_blank" rel="noopener noreferrer">Abrir Manual Veterinário Merck ↗</a></p></div>
+          <div class="reference"><strong>AAHA — 2024 Fluid Therapy Guidelines</strong><p>Diretrizes para cães e gatos com conteúdo sobre ressuscitação, reidratação, manutenção, perdas e monitoramento.</p><p style="margin-top:8px"><a href="https://www.aaha.org/resources/2024-aaha-fluid-therapy-guidelines-for-dogs-and-cats/" target="_blank" rel="noopener noreferrer">Abrir diretrizes de fluidoterapia ↗</a></p></div>
+        </div></div>
+        <div class="grid" style="align-content:start">
+          <div class="card"><div class="card-title"><div><h3>Requisitos de segurança</h3><p>Recomendações para a evolução do sistema.</p></div></div><div class="reference-list"><div class="reference"><strong>Rastreabilidade</strong><p>Cada dose ou informação clínica deve ter fonte, espécie, indicação, via, unidade e data de revisão.</p></div><div class="reference"><strong>Validação</strong><p>Separar o cálculo matemático da decisão clínica. Validar fórmulas e regras com docente ou médico-veterinário responsável.</p></div><div class="reference"><strong>Unidades</strong><p>Impedir operações entre unidades incompatíveis e explicitar se um valor é por administração ou por dia.</p></div><div class="reference"><strong>Privacidade</strong><p>Se futuramente houver cadastros ou prontuários, minimizar dados pessoais e estabelecer controle de acesso e armazenamento seguro.</p></div></div></div>
+          <div class="notice danger"><strong>Este arquivo é um protótipo front-end</strong>Os dados são mantidos no navegador apenas durante a sessão, sem autenticação ou banco de dados. Não use para orientar tratamento de um animal real.</div>
+        </div>
+      </div>
+    </section>
+    <footer class="footer"><span>© <span id="year"></span> VetDose · Projeto educacional de Medicina Veterinária</span><span>Protótipo HTML • CSS • JavaScript • sem backend</span></footer>
+  </main>
+</div>
+
+<!-- Modal de ficha -->
+<div class="modal-backdrop" id="medModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal"><div class="modal-head"><div><div class="eyebrow">Ficha demonstrativa</div><h3 id="modalTitle">Medicamento</h3></div><button class="close-btn" id="closeModal" aria-label="Fechar">×</button></div><div class="modal-body" id="modalBody"></div><div class="notice" style="margin-top:18px"><strong>Ficha ilustrativa — requer revisão</strong>Esta ficha demonstra a estrutura da aplicação. Não contém uma recomendação de dose nem substitui a bula oficial do produto exato.</div></div>
+</div>
+<script>
+// VetDose: protótipo educacional sem backend ou prescrição automática.
+const pages = {
+  dashboard: {title:'Seu apoio ao estudo veterinário', eyebrow:'Bem-vindo ao VetDose', subtitle:'Consulte informações farmacológicas e pratique cálculos em um só lugar.'},
+  medicamentos: {title:'Biblioteca farmacológica', eyebrow:'Consulta de medicamentos', subtitle:'Pesquise fichas demonstrativas ou envie uma imagem para conferência manual dos dados.'},
+  dose: {title:'Calculadora de dose', eyebrow:'Cálculo farmacológico', subtitle:'Transforme uma dose já documentada em quantidade matemática, conferindo todas as unidades.'},
+  fluidos: {title:'Fluidoterapia veterinária', eyebrow:'VetFluidos', subtitle:'Calcule componentes do balanço hídrico e estude princípios de seleção de soluções.'},
+  referencias: {title:'Referências e segurança', eyebrow:'Fontes e validação', subtitle:'Consulte fontes de referência e requisitos importantes para evoluir o protótipo com segurança.'}
+};
+const medicines = [
+  {id:1,name:'Amoxicilina',active:'Amoxicilina',category:'Antimicrobiano',form:'Exemplo de princípio ativo',mechanism:'Antimicrobiano beta-lactâmico; interfere na síntese da parede celular bacteriana por ligação a proteínas ligadoras de penicilina.',indications:'As indicações dependem do agente etiológico, do local da infecção, da espécie, da formulação e da bula aplicável. A seleção deve considerar diagnóstico e uso responsável de antimicrobianos.',routes:'A via depende da apresentação farmacêutica e do produto específico.',dose:'Posologia não cadastrada. Consultar bula oficial e referência veterinária para o produto, espécie e indicação correspondentes.',warnings:'Verificar alergias, contraindicações, função renal quando pertinente, interações e orientações de uso responsável de antimicrobianos.',source:'Preencher com bula oficial e referência verificadas antes de utilizar esta ficha.'},
+  {id:2,name:'Meloxicam',active:'Meloxicam',category:'Anti-inflamatório',form:'Exemplo de princípio ativo',mechanism:'Anti-inflamatório não esteroidal (AINE); inibe a síntese de prostaglandinas por ação sobre a ciclo-oxigenase, com seletividade relativa dependente das condições de avaliação.',indications:'A indicação, a espécie autorizada e o regime de uso dependem do produto e do quadro clínico. Não extrapolar posologias entre espécies ou apresentações.',routes:'Consultar a bula da formulação exata; apresentações diferentes podem ter vias diferentes.',dose:'Posologia não cadastrada. Consultar bula oficial e referência veterinária para o produto, espécie e indicação correspondentes.',warnings:'AINEs podem apresentar riscos gastrointestinais, renais e outros. A avaliação de hidratação, perfusão, função renal, comorbidades e uso concomitante de outros fármacos é importante.',source:'Preencher com bula oficial e referência verificadas antes de utilizar esta ficha.'},
+  {id:3,name:'Cefalexina',active:'Cefalexina',category:'Antimicrobiano',form:'Exemplo de princípio ativo',mechanism:'Antimicrobiano beta-lactâmico da classe das cefalosporinas; interfere na síntese da parede celular bacteriana.',indications:'As indicações e a escolha devem considerar diagnóstico, susceptibilidade provável ou confirmada, espécie e produto específico.',routes:'A via depende da formulação e da bula do produto exato.',dose:'Posologia não cadastrada. Consultar bula oficial e referência veterinária para o produto, espécie e indicação correspondentes.',warnings:'Verificar hipersensibilidade a beta-lactâmicos, contraindicações e uso responsável de antimicrobianos; confirmar orientação profissional.',source:'Preencher com bula oficial e referência verificadas antes de utilizar esta ficha.'}
+];
+let imageCount = 0;
+const $ = (id) => document.getElementById(id);
+function goPage(name){
+  if(!pages[name]) return;
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  $('pageTitle').textContent=pages[name].title; $('eyebrow').textContent=pages[name].eyebrow; $('pageSubtitle').textContent=pages[name].subtitle;
+  $('sidebar').classList.remove('open'); window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.page)));
+document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.goto)));
+$('mobileMenu').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+$('quickDose').addEventListener('click',()=>goPage('dose'));
+$('year').textContent=new Date().getFullYear();
+
+function renderMedicineList(){
+  const query=($('catalogSearch').value||'').trim().toLowerCase(); const cls=$('classFilter').value;
+  const found=medicines.filter(m=>(cls==='all'||m.category===cls) && [m.name,m.active,m.category,m.mechanism].join(' ').toLowerCase().includes(query));
+  $('catalogCount').textContent=`${found.length} ${found.length===1?'ficha':'fichas'}`; $('metricMeds').textContent=medicines.length;
+  if(!found.length){$('medicineList').innerHTML='<div class="empty">Nenhuma ficha corresponde à pesquisa.</div>';return;}
+  $('medicineList').innerHTML=found.map(m=>`<article class="medicine-row"><div class="med-avatar">✚</div><div class="med-main"><h4>${escapeHtml(m.name)} <span class="tag neutral">${escapeHtml(m.category)}</span></h4><p>Princípio ativo: ${escapeHtml(m.active)} · ${escapeHtml(m.form)}</p></div><div class="med-row-actions"><button class="btn btn-ghost btn-small" data-med-detail="${m.id}">Ver ficha</button><button class="btn btn-primary btn-small" data-med-calc="${m.id}">Calcular dose</button></div></article>`).join('');
+  document.querySelectorAll('[data-med-detail]').forEach(b=>b.addEventListener('click',()=>showMedicine(Number(b.dataset.medDetail))));
+  document.querySelectorAll('[data-med-calc]').forEach(b=>b.addEventListener('click',()=>{const m=medicines.find(x=>x.id===Number(b.dataset.medCalc));$('doseMedicine').value=m.name;goPage('dose');$('weight').focus()}));
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));}
+$('catalogSearch').addEventListener('input',renderMedicineList);$('classFilter').addEventListener('change',renderMedicineList);
+$('lookupText').addEventListener('input',()=>{$('catalogSearch').value=$('lookupText').value;renderMedicineList()});
+$('searchMedBtn').addEventListener('click',()=>{
+  const name=$('medNameInput').value.trim(); const active=$('activeInput').value.trim(); const query=(name+' '+active).trim().toLowerCase();
+  $('catalogSearch').value=query;renderMedicineList();
+  const match=medicines.find(m=>(m.name+' '+m.active).toLowerCase().includes(query) || query.includes(m.name.toLowerCase()) || query.includes(m.active.toLowerCase()));
+  $('lookupFeedback').textContent=!query?'Digite um nome ou princípio ativo para pesquisar.':match?`Possível correspondência no catálogo: ${match.name}. Abra a ficha e confirme se os dados correspondem ao produto exato.`:'Nenhuma ficha demonstrativa correspondente. A identificação deve ser conferida em fonte confiável; não foi possível confirmar pelo protótipo.';
+});
+$('clearMedForm').addEventListener('click',()=>{['medNameInput','activeInput','strengthInput','speciesInput'].forEach(id=>$(id).value='');$('lookupFeedback').textContent='Campos limpos. Digite um nome ou princípio ativo para pesquisar.'});
+function showMedicine(id){
+  const m=medicines.find(x=>x.id===id);if(!m)return;
+  $('modalTitle').textContent=m.name;
+  $('modalBody').innerHTML=`<p><strong>Princípio ativo:</strong> ${escapeHtml(m.active)}</p><p><strong>Classe:</strong> ${escapeHtml(m.category)}</p><p><strong>Apresentação:</strong> ${escapeHtml(m.form)}</p><h4>Mecanismo de ação</h4><p>${escapeHtml(m.mechanism)}</p><h4>Indicações</h4><p>${escapeHtml(m.indications)}</p><h4>Vias de administração</h4><p>${escapeHtml(m.routes)}</p><h4>Posologia</h4><p>${escapeHtml(m.dose)}</p><h4>Contraindicações e cuidados</h4><p>${escapeHtml(m.warnings)}</p><h4>Fonte</h4><p>${escapeHtml(m.source)}</p>`;
+  $('medModal').classList.add('open');
+}
+$('closeModal').addEventListener('click',()=>$('medModal').classList.remove('open'));
+$('medModal').addEventListener('click',e=>{if(e.target===$('medModal'))$('medModal').classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('medModal').classList.remove('open')});
+
+// Upload: only preview, no OCR or external upload.
+const uploadBox=$('uploadBox'), fileInput=$('medicineImage');
+$('chooseImage').addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',()=>{const f=fileInput.files&&fileInput.files[0];if(f)previewFile(f)});
+function previewFile(file){
+  if(!file.type.startsWith('image/')){alert('Selecione um arquivo de imagem válido.');return;}
+  if(file.size>10*1024*1024){alert('A imagem deve ter até 10 MB.');return;}
+  const reader=new FileReader();reader.onload=e=>{$('previewImg').src=e.target.result;$('imageName').textContent=file.name+' · '+(file.size/1024).toFixed(0)+' KB';uploadBox.classList.add('has-image');imageCount++;$('metricPhotos').textContent=imageCount};reader.readAsDataURL(file);
+}
+$('removeImage').addEventListener('click',()=>{fileInput.value='';$('previewImg').removeAttribute('src');uploadBox.classList.remove('has-image')});
+['dragenter','dragover'].forEach(evt=>uploadBox.addEventListener(evt,e=>{e.preventDefault();uploadBox.classList.add('drag')}));
+['dragleave','drop'].forEach(evt=>uploadBox.addEventListener(evt,e=>{e.preventDefault();uploadBox.classList.remove('drag')}));
+uploadBox.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)previewFile(f)});
+
+// Dose calculator: pure arithmetic only, no recommended doses.
+$('doseForm').addEventListener('submit',e=>{
+  e.preventDefault();const w=Number($('weight').value),d=Number($('doseValue').value),c=Number($('concentrationValue').value),unit=$('concentrationUnit').value;
+  if(![w,d,c].every(v=>Number.isFinite(v)&&v>0)){ $('doseResult').innerHTML='<div class="notice danger" style="margin-top:14px">Insira valores numéricos positivos e unidades compatíveis.</div>';return; }
+  const mg=w*d;let productResult='';let productLabel='';
+  if(unit==='mgml'){productResult=(mg/c).toLocaleString('pt-BR',{maximumFractionDigits:5})+' mL';productLabel='Volume matemático por administração';}
+  else{productResult=(mg/c).toLocaleString('pt-BR',{maximumFractionDigits:5})+' comprimido(s)';productLabel='Equivalência matemática em comprimidos';}
+  const source=$('doseSource').value.trim();
+  $('doseResult').innerHTML=`<div class="result-panel"><div class="result-label">Quantidade calculada de princípio ativo</div><div class="result-value">${mg.toLocaleString('pt-BR',{maximumFractionDigits:5})} mg</div><div class="result-desc">${w.toLocaleString('pt-BR')} kg × ${d.toLocaleString('pt-BR')} mg/kg por administração</div><div class="result-grid" style="margin-top:13px"><div class="result-box"><div class="lbl">${productLabel}</div><div class="num">${productResult}</div></div><div class="result-box"><div class="lbl">Espécie selecionada</div><div class="num" style="font-size:16px">${escapeHtml($('doseSpecies').value)}</div></div><div class="result-box"><div class="lbl">Produto / nota</div><div class="num" style="font-size:13px">${escapeHtml($('doseMedicine').value||'Não informado')}</div></div></div><div class="result-desc" style="margin-top:12px"><strong>Fonte informada:</strong> ${escapeHtml(source||'Não informada — registre a referência antes de interpretar o resultado.')}</div></div><div class="notice danger" style="margin-top:12px"><strong>Confirme antes de qualquer utilização</strong>Este resultado é estritamente matemático. Não valida dose, frequência, via, duração, segurança, indicação, fracionamento ou adequação ao paciente.</div>`;
+});
+
+// Fluid module tabs.
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
+  document.querySelectorAll('.tab-content').forEach(x=>x.classList.toggle('active',x.id==='tab-'+b.dataset.tab));
+}));
+$('fluidForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const w=Number($('fluidWeight').value),pct=Number($('dehydration').value),hours=Number($('correctionHours').value),mrRaw=$('maintenanceRate').value.trim(),lossRaw=$('ongoingLosses').value.trim(),factor=Number($('dropFactor').value);
+  const maintenanceRate=mrRaw===''?null:Number(mrRaw),losses=lossRaw===''?0:Number(lossRaw);
+  if(!(w>0)||!(pct>=0&&pct<=20)||!(hours>0)||!Number.isFinite(losses)||losses<0||(maintenanceRate!==null&&(!Number.isFinite(maintenanceRate)||maintenanceRate<0))){$('fluidResult').innerHTML='<div class="notice danger">Confira os campos. Peso e período devem ser positivos; desidratação deve estar entre 0 e 20% para este exercício.</div>';return;}
+  const deficit=w*pct*10, deficitRate=deficit/hours, maintenanceDay=maintenanceRate===null?null:w*maintenanceRate, lossesRate=losses/24, maintenanceHour=maintenanceDay===null?null:maintenanceDay/24;
+  const combined=(maintenanceHour===null)?null:deficitRate+maintenanceHour+lossesRate;
+  const n=v=>v.toLocaleString('pt-BR',{maximumFractionDigits:2});
+  let html=`<div class="result-grid"><div class="result-box"><div class="lbl">Déficit estimado</div><div class="num">${n(deficit)} mL</div><div class="result-desc">Peso × % × 10</div></div><div class="result-box"><div class="lbl">Parcela do déficit por hora</div><div class="num">${n(deficitRate)} mL/h</div><div class="result-desc">Distribuição aritmética em ${n(hours)} h</div></div><div class="result-box"><div class="lbl">Perdas contínuas</div><div class="num">${n(lossesRate)} mL/h</div><div class="result-desc">${n(losses)} mL/dia ÷ 24</div></div></div>`;
+  if(maintenanceRate===null){html+=`<div class="result-panel"><div class="result-label">Manutenção</div><div class="result-desc">Não calculada: informe uma taxa de manutenção proveniente da referência escolhida para o exercício. O sistema não preenche uma taxa universal automaticamente.</div></div>`;}
+  else{html+=`<div class="result-panel"><div class="result-label">Manutenção (a partir da taxa informada)</div><div class="result-value">${n(maintenanceDay)} mL/dia</div><div class="result-desc">${n(w)} kg × ${n(maintenanceRate)} mL/kg/dia = ${n(maintenanceDay)} mL/dia (${n(maintenanceHour)} mL/h)</div></div>`;}
+  if($('showCombined').checked&&combined!==null){html+=`<div class="result-panel"><div class="result-label">Soma aritmética ilustrativa das parcelas</div><div class="result-value">${n(combined)} mL/h</div><div class="result-desc">Déficit/h + manutenção/h + perdas/h. Este número não constitui indicação clínica de velocidade de infusão.</div><div class="result-box" style="margin-top:10px"><div class="lbl">Conversão matemática aproximada</div><div class="num">${n(combined*factor/60)} gotas/min</div><div class="result-desc">Usando o fator selecionado de ${factor} gotas/mL. Confirme o equipo e não utilize o resultado como prescrição.</div></div></div>`;}
+  else if($('showCombined').checked&&combined===null){html+=`<div class="notice info" style="margin-top:12px">Para exibir a soma ilustrativa, informe também a taxa de manutenção adotada no exercício.</div>`;}
+  html+=`<div class="notice danger" style="margin-top:13px"><strong>Interpretação obrigatória</strong>O cálculo de déficit é uma estimativa; a percentagem de desidratação pode ser imprecisa. Não inclui um plano de ressuscitação nem avalia eletrólitos, comorbidades, diurese, perfusão ou risco de sobrecarga. A taxa e a solução adequadas exigem avaliação e reavaliação veterinária.</div>`;
+  $('fluidResult').innerHTML=html;
+});
+$('clearFluid').addEventListener('click',()=>{$('fluidForm').reset();$('fluidResult').innerHTML='<div class="empty">Preencha os campos e selecione “Calcular componentes” para visualizar os resultados.</div>'});
+
+renderMedicineList();
+</script>
+</body>
+</html>
